@@ -35,7 +35,6 @@ func (p *postgres) Close() error {
 func (p *postgres) CreateUser(user model.User) (string, error) {
 	id := uuid.New().String()
 	user.Id = id
-	// тут бы надо ещё проверять что логин не занят и бла бла
 	_, err := p.db.Query(`INSERT INTO users (user_id, username, password_hash) VALUES ($1, $2, $3)`, user.Id, user.Username, user.Password)
 	if err != nil {
 		return "", fmt.Errorf("failed create new user: %v", err)

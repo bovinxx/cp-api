@@ -1,4 +1,4 @@
-SERVER_IMAGE_NAME = pudge
+SERVER_IMAGE_NAME = server
 SERVER_PORT = 8000
 RABBITMQ_IMAGE_NAME = rabbitmq:latest
 RABBITMQ_PORT = 5672
@@ -29,7 +29,7 @@ run:
 generate_docs:
 	$(GENERATE_DOCS)
 
-tmp_dir:
+set_tmp_dir:
 	$(SET_TMP_DIR)
 
 start:

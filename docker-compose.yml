@@ -115,3 +115,21 @@ services:
     links:
       - rabbitmq
       - postgres
+  prometheus:
+    image: ${PROMETHEUS_IMAGE}
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "19090:9090"
+    depends_on:
+      - server
+    links:
+      - server
+  grafana:
+    image: ${GRAFANA_IMAGE}
+    container_name: grafana
+    ports:
+      - "13000:3000"
+    volumes:
+      - ./grafana-data:/var/lib/grafana
