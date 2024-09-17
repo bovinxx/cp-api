@@ -1,0 +1,117 @@
+services:
+  postgres:
+    image: ${PG_IMAGE}
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB}
+      PGDATA: ${PG_DATA}
+    volumes:
+      - ./postgres/pgdata:${PG_DATA}
+    healthcheck:
+      test: pg_isready -U user -d db
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 30s
+  redis:
+    image: ${REDIS_IMAGE}
+    container_name: redis
+    restart: always
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: ${REDIS_PORT}
+    volumes:
+      - ${REDIS_DATA}:/data
+    healthcheck:
+      test: redis-cli --raw incr ping
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+  rabbitmq:
+    restart: always
+    image: ${RMQ_IMAGE}
+    container_name: rabbitmq
+    ports:
+      - "${RMQ_PORT}:${RMQ_PORT}"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 5
+  server:
+    build:
+      context: .
+      dockerfile: ${SERVER_DOCKERFILE}
+    container_name: server
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    environment:
+      RMQ_PORT: ${RMQ_PORT}
+      RMQ_USER: ${RMQ_USER}
+      RMQ_PASSWORD: ${RMQ_PASSWORD}
+      RMQ_HOST: ${RMQ_HOST}
+
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB}
+      POSTGRES_HOST: ${PG_HOST}
+
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+      SERVER_HOST: ${SERVER_HOST}
+      SERVER_PORT: ${SERVER_PORT}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+        restart: true
+      postgres:
+        condition: service_healthy
+        restart: true
+      redis:
+        condition: service_healthy
+        restart: true
+    links:
+      - rabbitmq
+      - postgres
+      - redis
+  code_processor:
+    build:
+      context: .
+      dockerfile: ${PROCESSOR_DOCKERFILE}
+    container_name: processor
+    ports:
+     - ${PROCESSOR_PORT}:${PROCESSOR_PORT}
+    environment:
+      RMQ_PORT: ${RMQ_PORT}
+      RMQ_USER: ${RMQ_USER}
+      RMQ_PASSWORD: ${RMQ_PASSWORD}
+      RMQ_HOST: ${RMQ_HOST}
+      RMQ_QUEUE_NAME: ${RMQ_QUEUE_NAME}
+
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB}
+      POSTGRES_HOST: ${PG_HOST}
+
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+      TMP_DIR: ${TMP_DIR}
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+     - ${TMP_DIR}:/app/tmp
+    depends_on:
+      - server
+    links:
+      - rabbitmq
+      - postgres

@@ -1,0 +1,129 @@
+basePath: /
+definitions:
+  model.User:
+    properties:
+      id:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  title: Code processor
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login user and return sessionID
+      parameters:
+      - description: Login user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: sessionID
+          schema:
+            type: string
+        "400":
+          description: bad json
+          schema:
+            type: string
+      summary: Login user
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register user and return usedID
+      parameters:
+      - description: Register user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: usedID
+          schema:
+            type: string
+        "400":
+          description: bad json
+          schema:
+            type: string
+      summary: Register user
+  /result/{id}:
+    get:
+      description: Return result task by id
+      parameters:
+      - description: taskID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Result
+          schema:
+            type: string
+        "400":
+          description: there's not such task
+          schema:
+            type: string
+        "401":
+          description: unauthorized user
+          schema:
+            type: string
+      summary: Get result task
+  /status/{id}:
+    get:
+      description: Return status task by id
+      parameters:
+      - description: taskID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: status
+          schema:
+            type: string
+        "400":
+          description: there's no such task
+          schema:
+            type: string
+        "401":
+          description: unauthorized user
+          schema:
+            type: string
+      summary: Get status task
+  /task:
+    post:
+      description: Create task and return taskID
+      responses:
+        "201":
+          description: taskID
+          schema:
+            type: string
+        "400":
+          description: invalid json
+          schema:
+            type: string
+        "401":
+          description: unauthorized user
+          schema:
+            type: string
+      summary: Create task
+swagger: "2.0"

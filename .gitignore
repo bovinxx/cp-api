@@ -1,0 +1,3 @@
+/postgres/pgdata/*
+/redisdata/*
+/tmp/*

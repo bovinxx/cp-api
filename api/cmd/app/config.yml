@@ -1,0 +1,15 @@
+server:
+  host: ""
+  port: "8000"
+rabbitmq:
+  user: "guest"
+  password: "guest"
+  host: "rabbitmq"
+postgres:
+  user: "user"
+  password: "password"
+  host: "postgres"
+  db_name: "db"
+redis:
+  password: "password"
+  host: "redis"
